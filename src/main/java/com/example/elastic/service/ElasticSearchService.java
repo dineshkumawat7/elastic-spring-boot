@@ -1,4 +1,4 @@
-package com.example.elastic.ElasticSearchTest.service;
+package com.example.elastic.service;
 
 import java.util.List;
 import java.util.Map;

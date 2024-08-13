@@ -1,4 +1,4 @@
-package com.example.elastic.ElasticSearchTest.exception;
+package com.example.elastic.exception;
 
 public class UserNotFoundException extends RuntimeException{
     public UserNotFoundException(String message) {

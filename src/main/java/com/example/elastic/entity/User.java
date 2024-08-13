@@ -1,4 +1,4 @@
-package com.example.elastic.ElasticSearchTest.entity;
+package com.example.elastic.entity;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;

@@ -1,19 +1,19 @@
-package com.example.elastic.ElasticSearchTest.controller;
+package com.example.elastic.controller;
 
 import co.elastic.clients.elasticsearch.core.SearchResponse;
-import com.example.elastic.ElasticSearchTest.entity.User;
-import com.example.elastic.ElasticSearchTest.payload.UserDto;
-import com.example.elastic.ElasticSearchTest.service.UserService;
-import com.example.elastic.ElasticSearchTest.utils.ApiResponse;
+import com.example.elastic.entity.User;
+import com.example.elastic.payload.UserDto;
+import com.example.elastic.service.UserScheduler;
+import com.example.elastic.service.UserService;
+import com.example.elastic.utils.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.client.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -30,87 +30,105 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @PostMapping("/register")
-    public ResponseEntity<ApiResponse<UserDto>> registerNewUser(@Valid @RequestBody UserDto userDto){
+    @Autowired
+    private UserScheduler userScheduler;
+
+    @PostMapping("/s/register")
+    public ResponseEntity<?> registerNewUserWithScheduler(@Valid @RequestBody UserDto userDto) {
         ApiResponse<UserDto> response = new ApiResponse<>();
-        try{
-            UserDto u = userService.registerNewUser(userDto);
+        try {
+            userScheduler.registerUser(userDto);
+            response.setMessage("New user register successfully");
+            response.setData(userDto);
+            return new ResponseEntity<>(response, HttpStatus.CREATED);
+        } catch (Exception e) {
+            response.setMessage(e.getMessage());
+            response.setData(null);
+            logger.error(e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<ApiResponse<User>> registerNewUser(@Valid @RequestBody UserDto userDto) {
+        ApiResponse<User> response = new ApiResponse<>();
+        try {
+            User u = userService.registerNewUser(userDto);
             response.setMessage("New user register successfully");
             response.setData(u);
-            logger.info("new user register with id: " + u.getId());
+            logger.info("new user register with id: {}", u.getId());
             return new ResponseEntity<>(response, HttpStatus.CREATED);
-        }catch (Exception e){
+        } catch (Exception e) {
             response.setMessage("" + e);
             response.setData(null);
-            logger.error("" + e);
+            logger.error(e.getMessage());
             return ResponseEntity.internalServerError().body(response);
         }
     }
 
     @GetMapping("/get")
-    public ResponseEntity<ApiResponse<List<UserDto>>> getAllUsers(){
+    public ResponseEntity<ApiResponse<List<UserDto>>> getAllUsers() {
         ApiResponse<List<UserDto>> response = new ApiResponse<>();
-        try{
+        try {
             List<UserDto> users = (List<UserDto>) userService.getAllUsers();
-           response.setData(users);
-           response.setMessage("All users");
-           return new ResponseEntity<>(response, HttpStatus.OK);
-        }catch (Exception e){
+            response.setData(users);
+            response.setMessage("All users");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
             response.setMessage("" + e);
             response.setData(null);
-            logger.error("" + e);
+            logger.error(e.getMessage());
             return ResponseEntity.internalServerError().body(response);
         }
     }
 
     @GetMapping("/get/{id}")
-    public ResponseEntity<ApiResponse<UserDto>> getUser(@PathVariable(value = "id") long id){
+    public ResponseEntity<ApiResponse<UserDto>> getUser(@PathVariable(value = "id") long id) {
         ApiResponse<UserDto> response = new ApiResponse<>();
-        try{
+        try {
             UserDto user = userService.getUserById(id);
             response.setData(user);
             response.setMessage("User found with id: " + id);
             return new ResponseEntity<>(response, HttpStatus.OK);
-        }catch (Exception e){
+        } catch (Exception e) {
             response.setMessage("" + e);
             response.setData(null);
-            logger.error("" + e);
+            logger.error(e.getMessage());
             return ResponseEntity.internalServerError().body(response);
         }
     }
 
     @PutMapping("/update/{id}")
     public ResponseEntity<ApiResponse<UserDto>> updateUser(@PathVariable(value = "id", required = true) long id,
-                                                        @Valid @RequestBody UserDto userDto){
+                                                           @Valid @RequestBody UserDto userDto) {
         ApiResponse<UserDto> response = new ApiResponse<>();
-        try{
+        try {
             UserDto updatedUser = userService.updateUserDetails(id, userDto);
             response.setData(updatedUser);
             response.setMessage("User details updated");
-            logger.info("update user details with id: " + updatedUser.getId());
+            logger.info("update user details with id: {}", updatedUser.getId());
             return new ResponseEntity<>(response, HttpStatus.OK);
-        }catch (Exception e){
+        } catch (Exception e) {
             response.setMessage("" + e);
             response.setData(null);
-            logger.error("" + e);
+            logger.error(e.getMessage());
             return ResponseEntity.internalServerError().body(response);
         }
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<ApiResponse<UserDto>> deleteUser(@PathVariable("id") long id){
+    public ResponseEntity<ApiResponse<UserDto>> deleteUser(@PathVariable("id") long id) {
         ApiResponse<UserDto> response = new ApiResponse<>();
-        try{
+        try {
             userService.deleteUser(id);
             response.setData(null);
             response.setMessage("Successfully deleted user account with id: " + id);
             logger.info("delete user account with id: {}", id);
             return new ResponseEntity<>(response, HttpStatus.OK);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             response.setMessage("" + e);
             response.setData(null);
-            logger.error("" + e);
+            logger.error(e.getMessage());
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -130,15 +148,15 @@ public class UserController {
     }
 
     @GetMapping("/searchByCity")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> searchUserByCity(@RequestParam String index ,@RequestParam String city){
+    public ResponseEntity<ApiResponse<Map<String, Object>>> searchUserByCity(@RequestParam String index, @RequestParam String city) {
         ApiResponse<Map<String, Object>> response = new ApiResponse<>();
-        try{
+        try {
             Map<String, Object> users = userService.searchUserByCity(index, city);
             response.setMessage("search result by city..");
             response.setData(users);
             return new ResponseEntity<>(response, HttpStatus.OK);
-        }catch (Exception e){
-            response.setMessage("Something wrong on server..");
+        } catch (Exception e) {
+            response.setMessage(e.getMessage());
             response.setData(null);
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -150,15 +168,15 @@ public class UserController {
             @RequestParam String searchField,
             @RequestParam String searchValue,
             @RequestParam String sortOrder
-            ){
+    ) {
         ApiResponse<List<Map<String, Object>>> response = new ApiResponse<>();
-        try{
-            List<Map<String, Object>> users = userService.sortByField("users" , field, searchField, searchValue, sortOrder);
+        try {
+            List<Map<String, Object>> users = userService.sortByField("users", field, searchField, searchValue, sortOrder);
             response.setMessage("sorted result..");
             response.setData(users);
             return new ResponseEntity<>(response, HttpStatus.OK);
-        }catch (Exception e){
-            logger.error("" + e);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
             response.setMessage("Something wrong on server..");
             response.setData(null);
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
