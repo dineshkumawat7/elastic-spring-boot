@@ -1,4 +1,4 @@
-package com.example.elastic.ElasticSearchTest.payload;
+package com.example.elastic.payload;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;

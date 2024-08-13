@@ -1,4 +1,4 @@
-package com.example.elastic.ElasticSearchTest.config;
+package com.example.elastic.config;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
@@ -13,8 +13,6 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestClientBuilder;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -55,18 +53,18 @@ public class ElasticSearchConfig {
     private String keyStorePath;
 
     @Bean
-    public RestClientTransport restClientTransport(RestClient restClient){
+    public RestClientTransport restClientTransport(RestClient restClient) {
         return new RestClientTransport(restClient, new JacksonJsonpMapper());
     }
 
     @Bean
-    public ElasticsearchClient elasticsearchClient(RestClientTransport restClientTransport){
-       return new co.elastic.clients.elasticsearch.ElasticsearchClient(restClientTransport);
+    public ElasticsearchClient elasticsearchClient(RestClientTransport restClientTransport) {
+        return new co.elastic.clients.elasticsearch.ElasticsearchClient(restClientTransport);
     }
 
 
     public
-    String keystore= "truststore.jks";
+    String keystore = "truststore.jks";
 
     @Bean
     public RestClient restClient() throws Exception {
@@ -81,9 +79,9 @@ public class ElasticSearchConfig {
 
         RestClient client = RestClient.builder(new HttpHost(host, port, stream))
                 .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder
-                .setDefaultCredentialsProvider(credentialsProvider)
-                .setSSLContext(sslContext)
-        ).build();
+                        .setDefaultCredentialsProvider(credentialsProvider)
+                        .setSSLContext(sslContext)
+                ).build();
         return client;
     }
 
@@ -94,7 +92,6 @@ public class ElasticSearchConfig {
         keyStore.load(keystore, keyStorePassword.toCharArray());
         return keyStore;
     }
-
 
 
 }

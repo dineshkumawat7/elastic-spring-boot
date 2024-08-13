@@ -1,4 +1,4 @@
-package com.example.elastic.ElasticSearchTest.utils;
+package com.example.elastic.utils;
 
 import lombok.Data;
 

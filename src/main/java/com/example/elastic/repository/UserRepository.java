@@ -1,6 +1,6 @@
-package com.example.elastic.ElasticSearchTest.repository;
+package com.example.elastic.repository;
 
-import com.example.elastic.ElasticSearchTest.entity.User;
+import com.example.elastic.entity.User;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
 

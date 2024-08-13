@@ -1,6 +1,6 @@
-package com.example.elastic.ElasticSearchTest.exception;
+package com.example.elastic.exception;
 
-import com.example.elastic.ElasticSearchTest.utils.ValidationErrorResponse;
+import com.example.elastic.utils.ValidationErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
