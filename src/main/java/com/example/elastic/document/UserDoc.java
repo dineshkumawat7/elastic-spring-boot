@@ -1,4 +1,4 @@
-package com.example.elastic.entity;
+package com.example.elastic.document;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -8,11 +8,11 @@ import java.io.Serializable;
 
 @Document(indexName = "users")
 @Data
-public class User implements Serializable {
+public class UserDoc implements Serializable {
     @Id
     private long id;
     private String name;
+    private String email;
     private String city;
-    private int age;
-    private double salary;
+    private String password;
 }
