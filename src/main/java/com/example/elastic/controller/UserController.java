@@ -23,12 +23,8 @@ import java.util.Map;
 @RequestMapping("/user")
 @Slf4j
 public class UserController {
-
-    Logger logger = LoggerFactory.getLogger(UserController.class);
-
     @Autowired
     private UserService userService;
-
     @Autowired
     private UserScheduler userScheduler;
 
@@ -43,7 +39,7 @@ public class UserController {
         } catch (Exception e) {
             response.setMessage(e.getMessage());
             response.setData(null);
-            logger.error(e.getMessage());
+            log.error(e.getMessage());
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -55,12 +51,12 @@ public class UserController {
             UserDoc u = userService.registerNewUser(userDto);
             response.setMessage("New user register successfully");
             response.setData(u);
-            logger.info("new user register with id: {}", u.getId());
+            log.info("new user register with id: {}", u.getId());
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (Exception e) {
             response.setMessage("" + e);
             response.setData(null);
-            logger.error(e.getMessage());
+            log.error(e.getMessage());
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -76,7 +72,7 @@ public class UserController {
         } catch (Exception e) {
             response.setMessage("" + e);
             response.setData(null);
-            logger.error(e.getMessage());
+            log.error(e.getMessage());
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -92,7 +88,7 @@ public class UserController {
         } catch (Exception e) {
             response.setMessage("" + e);
             response.setData(null);
-            logger.error(e.getMessage());
+            log.error(e.getMessage());
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -105,12 +101,12 @@ public class UserController {
             UserDto updatedUser = userService.updateUserDetails(id, userDto);
             response.setData(updatedUser);
             response.setMessage("User details updated");
-            logger.info("update user details with id: {}", updatedUser.getId());
+            log.info("update user details with id: {}", updatedUser.getId());
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             response.setMessage("" + e);
             response.setData(null);
-            logger.error(e.getMessage());
+            log.error(e.getMessage());
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -122,12 +118,12 @@ public class UserController {
             userService.deleteUser(id);
             response.setData(null);
             response.setMessage("Successfully deleted user account with id: " + id);
-            logger.info("delete user account with id: {}", id);
+            log.info("delete user account with id: {}", id);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             response.setMessage("" + e);
             response.setData(null);
-            logger.error(e.getMessage());
+            log.error(e.getMessage());
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -175,7 +171,7 @@ public class UserController {
             response.setData(users);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            log.error(e.getMessage());
             response.setMessage("Something wrong on server..");
             response.setData(null);
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
