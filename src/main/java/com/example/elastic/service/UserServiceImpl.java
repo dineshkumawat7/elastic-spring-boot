@@ -5,10 +5,10 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch.core.search.TotalHits;
 import co.elastic.clients.elasticsearch.core.search.TotalHitsRelation;
-import com.example.elastic.entity.User;
+import com.example.elastic.document.UserDoc;
 import com.example.elastic.exception.UserNotFoundException;
 import com.example.elastic.payload.UserDto;
-import com.example.elastic.repository.UserRepository;
+import com.example.elastic.repository.elastic.ElasticUserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.elasticsearch.client.Request;
@@ -18,7 +18,6 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -29,7 +28,7 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
     Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
     @Autowired
-    private UserRepository userRepository;
+    private ElasticUserRepository elasticUserRepository;
     @Autowired
     private ModelMapper mapper;
     @Autowired
@@ -39,45 +38,45 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private RestClient restClient;
 
-    public User registerNewUser(UserDto userDto) {
-        User user = new User();
-        user.setId(userDto.getId());
-        user.setName(userDto.getName());
-        user.setCity(userDto.getCity());
-        user.setAge(userDto.getAge());
-        user.setSalary(userDto.getSalary());
-        userRepository.save(user);
-        return mapper.map(user, User.class);
+    public UserDoc registerNewUser(UserDto userDto) {
+        UserDoc userDoc = new UserDoc();
+        userDoc.setId(userDto.getId());
+        userDoc.setName(userDto.getName());
+        userDoc.setCity(userDto.getCity());
+        userDoc.setEmail(userDto.getEmail());
+        userDoc.setPassword(userDto.getPassword());
+        UserDoc createdUser = elasticUserRepository.save(userDoc);
+        return mapper.map(createdUser, UserDoc.class);
     }
 
     public List<UserDto> getAllUsers() {
-        Iterable<User> iterable = userRepository.findAll();
-        List<User> users = new ArrayList<>();
-        for (User user : iterable) {
-            users.add(user);
+        Iterable<UserDoc> iterable = elasticUserRepository.findAll();
+        List<UserDoc> userDocs = new ArrayList<>();
+        for (UserDoc userDoc : iterable) {
+            userDocs.add(userDoc);
         }
-        return users.stream().map(this::convertToDto).collect(Collectors.toList());
+        return userDocs.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
-    private UserDto convertToDto(User user) {
-        return mapper.map(user, UserDto.class);
+    private UserDto convertToDto(UserDoc userDoc) {
+        return mapper.map(userDoc, UserDto.class);
     }
 
     public UserDto getUserById(long id) {
-        User user = this.userRepository.findById(id).orElseThrow();
-        return mapper.map(user, UserDto.class);
+        UserDoc userDoc = this.elasticUserRepository.findById(id).orElseThrow();
+        return mapper.map(userDoc, UserDto.class);
     }
 
     public UserDto updateUserDetails(long id, UserDto userDto) {
-        Optional<User> existingUser = this.userRepository.findById(id);
+        Optional<UserDoc> existingUser = this.elasticUserRepository.findById(id);
         if (existingUser.isPresent()) {
-            User u = existingUser.get();
+            UserDoc u = existingUser.get();
             u.setId(userDto.getId());
             u.setName(userDto.getName());
             u.setCity(userDto.getCity());
-            u.setAge(userDto.getAge());
-            u.setSalary(userDto.getSalary());
-            userRepository.save(u);
+            u.setEmail(userDto.getEmail());
+            u.setPassword(userDto.getPassword());
+            elasticUserRepository.save(u);
             return mapper.map(u, UserDto.class);
         } else {
             throw new UserNotFoundException("User not found with id: " + id);
@@ -85,30 +84,30 @@ public class UserServiceImpl implements UserService {
     }
 
     public void deleteUser(long id) {
-        Optional<User> user = this.userRepository.findById(id);
+        Optional<UserDoc> user = this.elasticUserRepository.findById(id);
         if (user.isPresent()) {
-            this.userRepository.deleteById(id);
+            this.elasticUserRepository.deleteById(id);
         } else {
             throw new UserNotFoundException("User not found with id: " + id);
         }
     }
 
     @Override
-    public SearchResponse<User> searchUsers(String keyword) throws IOException {
-        SearchResponse<User> response = elasticsearchClient.search(s -> s.index("users").query(q -> q.match(t -> t.field("name").query(keyword))), User.class);
+    public SearchResponse<UserDoc> searchUsers(String keyword) throws IOException {
+        SearchResponse<UserDoc> response = elasticsearchClient.search(s -> s.index("users").query(q -> q.match(t -> t.field("name").query(keyword))), UserDoc.class);
         TotalHits total = response.hits().total();
         boolean isExactResult = total.relation() == TotalHitsRelation.Eq;
 
         if (isExactResult) {
-            logger.info("There are " + total.value() + " results");
+            logger.info("There are {} results", total.value());
         } else {
-            logger.info("There are more than " + total.value() + " results");
+            logger.info("There are more than {} results", total.value());
         }
 
-        List<Hit<User>> hits = response.hits().hits();
-        for (Hit<User> hit : hits) {
-            User user = hit.source();
-            logger.info("Found user " + user.getName() + ", score " + hit.score());
+        List<Hit<UserDoc>> hits = response.hits().hits();
+        for (Hit<UserDoc> hit : hits) {
+            UserDoc userDoc = hit.source();
+            logger.info("Found user {}, score {}", userDoc.getName(), hit.score());
         }
 
         return response;

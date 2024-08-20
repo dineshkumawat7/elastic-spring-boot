@@ -10,12 +10,11 @@ public class UserDto {
     private Long id;
     @NotEmpty(message = "name is mandatory")
     private String name;
+    @Email(message = "invalid email")
+    @NotNull(message = "email is mandatory")
+    private String email;
     @NotEmpty(message = "city is mandatory")
     private String city;
-    @NotNull(message = "Age is mandatory")
-    @Min(value = 1, message = "Age should not be less than 1")
-    @Max(value = 100, message = "Age should not be more than 100")
-    private Integer age;
-    @NotNull(message = "salary is mandatory")
-    private Double salary;
+    @NotNull(message = "password is mandatory")
+    private String password;
 }
